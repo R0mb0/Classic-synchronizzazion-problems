@@ -1,8 +1,8 @@
-package francescorombaldoni.producer.consumer.condition.variables;
+package francescorombaldoni.producer.consumer.semaphores;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.Condition;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -19,7 +19,6 @@ class Buffer {
     
     /*in case of limited buffer*/
     private int[] limitedBuffer;
-    private int bufferElements;
     private int insertIndex;
     private int readIndex;
     
@@ -29,9 +28,9 @@ class Buffer {
     /*mutex to modify the shared object*/
     private ReentrantLock mutex;
     
-    /*condition variables to control the acess to the shared memory*/
-    private Condition bufferEmpty;
-    private Condition bufferFull;
+    /*Semaphores to control the acess to the shared memory*/
+    private Semaphore producer;
+    private Semaphore consumer;
     
     /*PRIVATE FIELDS FOR DEBUG*/
     private long time;
@@ -43,9 +42,10 @@ class Buffer {
     /*limited buffer case*/
     /**
      * 
-     * @param bufferLength set the number of cells of buffer  
+     * @param bufferLength set the number of cells of buffer
+     * @param isFifoSemaphore set if the semaphores must serve in fifo order
      */
-    public Buffer(int bufferLength){
+    public Buffer(int bufferLength, boolean isFifoSemaphore){
         if(bufferLength <= 0){
             System.out.println("Error -> The buffer couldn't have negative length"
                     + " or 0 length");
@@ -54,12 +54,12 @@ class Buffer {
         
         this.isLimited = true;
         this.limitedBuffer = new int[bufferLength];
-        this.bufferElements = 0;
         this.insertIndex = 0;
         this.readIndex = 0;
         this.mutex = new ReentrantLock();
-        this.bufferEmpty = this.mutex.newCondition();
-        this.bufferFull = this.mutex.newCondition();
+        /*at the starting the poducer must produce*/
+        this.producer = new Semaphore(this.limitedBuffer.length, isFifoSemaphore);
+        this.consumer = new Semaphore(0, isFifoSemaphore);
         this.time = System.currentTimeMillis();
         this.producersTimes = new ArrayList<Long>();
         this.consumersTimes = new ArrayList<Long>();
@@ -70,8 +70,9 @@ class Buffer {
      * 
      * @param isUnlimited true if the buffer is unlimited, else insert a positive
      * integer number
+     * @param isFifoSemaphore set if the semaphores must serve in fifo order
      */
-    public Buffer(boolean isUnlimited){
+    public Buffer(boolean isUnlimited, boolean isFifoSemaphore){
         if(!isUnlimited){
             System.out.println("Error -> If the buffer is limited, insert the "
                     + "length of the buffer");
@@ -81,7 +82,7 @@ class Buffer {
         this.isLimited = false;
         this.unlimitedBuffer = new ArrayList<Integer>();
         this.mutex = new ReentrantLock();
-        this.bufferEmpty = this.mutex.newCondition();
+        this.consumer = new Semaphore(0, isFifoSemaphore);
         this.time = System.currentTimeMillis();
         this.producersTimes = new ArrayList<Long>();
         this.consumersTimes = new ArrayList<Long>();
@@ -95,17 +96,33 @@ class Buffer {
      * @param element the integer to insert into buffer
      */
     private void insertToBuffer(int element){
-        this.bufferElements++;
-        this.limitedBuffer[this.insertIndex] = element;
-        this.insertIndex = (this.insertIndex + 1) % this.limitedBuffer.length;
+        
+        try{
+            /*start crtical section*/
+            this.mutex.lock();
+            this.limitedBuffer[this.insertIndex] = element;
+            this.insertIndex = (this.insertIndex + 1) % this.limitedBuffer.length;
+        }finally{
+            this.mutex.unlock();
+            /*end critical section*/
+        }
     }
     
     /*read an element from limited buffer*/
     private int readFromBuffer(){
-        this.bufferElements--;
-        int temp = this.limitedBuffer[this.readIndex];
-        this.readIndex = (this.readIndex + 1) % this.limitedBuffer.length;
+        int temp;
+        try{
+            /*start critical section*/
+            this.mutex.lock();
+            temp = this.limitedBuffer[this.readIndex];
+            this.readIndex = (this.readIndex + 1) % this.limitedBuffer.length;
+        }finally{
+            this.mutex.unlock();
+            /*end critical section*/
+        }
+        
         return temp;
+        
     }
     
     /*PUBLIC METHODS*/
@@ -164,6 +181,7 @@ class Buffer {
         for(long t : this.consumersTimes){
             temp += t;
         }
+        
         return temp / this.consumersTimes.size();
     }
     
@@ -173,25 +191,16 @@ class Buffer {
         if(this.isLimited){
             /*limited buffer*/
             try{
-                /*start critical section*/
-                this.mutex.lock();
                 /*stop the Thread if can't produce an alement*/
-                while(this.bufferElements == this.limitedBuffer.length){
-                    try{
-                        this.bufferFull.await();
-                    }catch(InterruptedException e){
-                        System.out.println("Error of: " + producer.getName() + " into produce"
-                                + " method");
-                        System.exit(1);
-                    }  
-                }
+                this.producer.acquire();
                 /*produce an element*/
-                this.insertToBuffer(producer.getElement());
                 System.out.println("-> " + producer.getName() + " has produced: " + producer.getElement());
+                this.insertToBuffer(producer.getElement());
                 /*notify that the buffer is not empty*/
-                this.bufferEmpty.signal();
-            }finally{
-                this.mutex.unlock();
+                this.consumer.release();
+            }catch(InterruptedException e){
+                System.out.println("Error of "+ producer.getName()+ " in producer method");
+                System.exit(1);
             }
         }else{
             /*unlimited buffer*/
@@ -202,7 +211,7 @@ class Buffer {
                 System.out.println("-> " + producer.getName() + " has produced: " + producer.getElement());
                 this.unlimitedBuffer.add(producer.getElement());
                 /*notify that the buffer is not empty*/
-                this.bufferEmpty.signal();
+                this.consumer.release();
             }finally{
                 this.mutex.unlock();
                 /*end critical section*/
@@ -214,32 +223,22 @@ class Buffer {
         System.out.println("==> " + consumer.getName() + " is ready to consume an element");
         if(this.isLimited){
             /*limited buffer*/
-            try{
-                /*start critical section*/
-                this.mutex.lock();
-                /*stop the Thread if can't consume an alement*/
-                while(this.bufferElements == 0){
-                    this.bufferEmpty.await();
-                }
-                /*remove an element*/
-                int temp = this.readFromBuffer();
-                /*signal that the buffer isn't full*/
-                this.bufferFull.signal();
-                return temp;
-            }finally{
-                this.mutex.unlock();
-                /*end critical section*/
-            }
+            /*stop the Thread if can't consume an alement*/
+            this.consumer.acquire();
+            /*remove an element*/
+            int temp = this.readFromBuffer();
+            /*signal that the buffer isn't full*/
+            this.producer.release();
+            return temp;
         }else{
             /*unlimited buffer*/
+            /*stop the Thread if can't consume an alement*/
+            this.consumer.acquire();
+            /*remove an element*/
             try{
                 /*start critical section*/
                 this.mutex.lock();
-                /*stop the Thread if can't consume an alement*/
-                while(this.unlimitedBuffer.isEmpty()){
-                    this.bufferEmpty.await();
-                }
-                /*remove an element*/
+                
                 int temp = this.unlimitedBuffer.get(0);
                 this.unlimitedBuffer.remove(0);
                 return temp;

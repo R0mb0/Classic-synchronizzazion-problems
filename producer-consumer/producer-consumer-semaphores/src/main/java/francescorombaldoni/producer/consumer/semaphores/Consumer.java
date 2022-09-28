@@ -1,4 +1,4 @@
-package francescorombaldoni.producer.consumer.condition.variables;
+package francescorombaldoni.producer.consumer.semaphores;
 
 /**
  *
@@ -7,7 +7,7 @@ package francescorombaldoni.producer.consumer.condition.variables;
  * Consumer Thread
  */
 class Consumer extends Thread{
-    /*FIELDS*/
+     /*FIELDS*/
     private Buffer buffer;/*internal shared object*/
     private int timeToSleep;
     private boolean life;
