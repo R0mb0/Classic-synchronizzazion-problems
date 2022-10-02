@@ -33,13 +33,13 @@ class Buffer {
     private Condition bufferEmpty;
     private Condition bufferFull;
     
-    /*PRIVATE FIELDS FOR DEBUG*/
+    /*PRIVATE FIELDS FOR DEBUG PURPOSE*/
     private long time;
     private List<Long> producersTimes;
     private List<Long> consumersTimes;
     
     
-    /*COSTRUCTORS*/
+    /*BUILDERS*/
     /*limited buffer case*/
     /**
      * 
@@ -101,6 +101,10 @@ class Buffer {
     }
     
     /*read an element from limited buffer*/
+    /**
+     * 
+     * @return the right element from the buffer.
+     */
     private int readFromBuffer(){
         this.bufferElements--;
         int temp = this.limitedBuffer[this.readIndex];
@@ -109,8 +113,10 @@ class Buffer {
     }
     
     /*PUBLIC METHODS*/
-    
-    /*get total time of the execution*/
+    /**
+     * 
+     * @return the total time of progrma's execution
+     */
     public long getTotalTime(){
         return System.currentTimeMillis() - this.time;
     }
@@ -131,7 +137,10 @@ class Buffer {
         }
     }
     
-    /*get the average time spent by the producers to produce*/
+    /**
+     * 
+     * @return the average time spent by the producers to produce.
+     */
     public long getProducerAverageTime(){
         int temp = 0;
         for(long t : this.producersTimes){
@@ -158,7 +167,10 @@ class Buffer {
         }
     }
     
-    /*get the average time spent by the consumers to consume*/
+    /**
+     * 
+     * @return the average time spent by the consumers to consume.
+     */
     public long getConsumerAverageTime(){
         int temp = 0;
         for(long t : this.consumersTimes){
@@ -168,6 +180,10 @@ class Buffer {
     }
     
     /*PUBLIC SYNCHRONIZATION METHODS*/
+    /**
+     * 
+     * @param producer the producer that produce an element to insert into the buffer.
+     */
     public void produce(Producer producer){
         System.out.println("--> " + producer.getName() + " wants produce an element");
         if(this.isLimited){
@@ -210,6 +226,12 @@ class Buffer {
         }
     }
     
+    /**
+     * 
+     * @param consumer the consumer that consume an element from the buffer.
+     * @return the time to suspend the consumer later its consumation.
+     * @throws InterruptedException 
+     */
     public int consume(Consumer consumer) throws InterruptedException{
         System.out.println("==> " + consumer.getName() + " is ready to consume an element");
         if(this.isLimited){

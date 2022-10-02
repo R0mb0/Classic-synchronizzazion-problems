@@ -9,8 +9,10 @@ public class ProducerConsumerConditionVariables {
     //public static final boolean BUFFERS_ELEMENTS = true; /*remove the comment for unlimited buffer*/
     public static final int CONSUMERS_NUMBER = 5;
     public static final int CONSUMERS_TIME_TO_SLEEP = 100;
+    //public static final boolean CONSUMERS_TIME_TO_SLEEP = true; /*remove the comment for random consumers time to sleep*/
     public static final int PRODUCERS_NUMBER = 100;
     public static final int PRODUCERS_TIME_TO_SLEEP = 300;
+    //public static final boolean PRODUCERS_TIME_TO_SLEEP = true; /*remove the comment for random producers time to sleep*/
     public static final int PRODUCERS_LIFE = 2;
     
     /*MAIN*/
