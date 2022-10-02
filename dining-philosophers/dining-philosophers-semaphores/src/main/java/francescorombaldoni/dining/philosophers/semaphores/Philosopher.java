@@ -1,4 +1,4 @@
-package francescorombaldoni.dining.philosophers.condition.variables;
+package francescorombaldoni.dining.philosophers.semaphores;
 
 import java.util.Random;
 
