@@ -26,3 +26,4 @@ hs_err_pid*
 /producer-consumer/producer-consumer-semaphores/target/
 /dining-philosophers/dining-philosophers-condition-variables/target/
 /dining-philosophers/dining-philosophers-semaphores/target/
+/readers-and-writers/readers-and-writers-condition-variables/target/

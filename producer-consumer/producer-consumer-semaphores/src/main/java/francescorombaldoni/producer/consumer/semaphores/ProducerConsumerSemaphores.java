@@ -5,8 +5,8 @@ package francescorombaldoni.producer.consumer.semaphores;
  * @author rombo
  */
 public class ProducerConsumerSemaphores {
-    public static final int BUFFERS_ELEMENTS = 10;
-    //public static final boolean BUFFERS_ELEMENTS = true; /*remove the comment for unlimited buffer*/
+    public static final int BUFFERS_LENGTH = 10;
+    //public static final boolean BUFFERS_LENGTH = true; /*remove the comment for unlimited buffer*/
     public static final boolean FIFO_BUFFER = true;
     public static final int CONSUMERS_NUMBER = 5;
     public static final int CONSUMERS_TIME_TO_SLEEP = 100;
@@ -19,7 +19,7 @@ public class ProducerConsumerSemaphores {
     /*MAIN*/
     public static void main(String[] args) {
         
-        Buffer buffer = new Buffer(BUFFERS_ELEMENTS, FIFO_BUFFER);
+        Buffer buffer = new Buffer(BUFFERS_LENGTH, FIFO_BUFFER);
         Consumer[] consumers = new Consumer[CONSUMERS_NUMBER];
         Producer[] producers = new Producer[PRODUCERS_NUMBER];
         
