@@ -6,16 +6,16 @@ package francescorombaldoni.readers.and.writers.condition.variables;
  */
 public class ReadersAndWritersConditionVariables {
 
-   //public final static int BUFFERS_LENGTH = 7;
-   public final static boolean BUFFERS_LENGTH = true; /*remove the comment for random buffers elements*/
+   public final static int BUFFERS_LENGTH = 7;
+   //public final static boolean BUFFERS_LENGTH = true; /*remove the comment for random buffers elements*/
    public static final int READERS_NUMBER = 10;
-   //public static final int READERS_TIME_TO_READ = 150;
-   public static final boolean READERS_TIME_TO_READ = true; /*remove the comment for random readers time to read*/
-   //public static final int READERS_TIME_TO_SLEEP = 300;
-   public static final boolean READERS_TIME_TO_SLEEP = true; /*remove the comment for random readers time to sleep*/
+   public static final int READERS_TIME_TO_READ = 150;
+   //public static final boolean READERS_TIME_TO_READ = true; /*remove the comment for random readers time to read*/
+   public static final int READERS_TIME_TO_SLEEP = 300;
+   //public static final boolean READERS_TIME_TO_SLEEP = true; /*remove the comment for random readers time to sleep*/
    public static final int WRITERS_NUMBER = 5;
-   //public static final int WRITERS_TIME_TO_SLEEP = 200;
-   public static final boolean WRITERS_TIME_TO_SLEEP = true; /*remove the comment for random writers time to read*/
+   public static final int WRITERS_TIME_TO_SLEEP = 200;
+   //public static final boolean WRITERS_TIME_TO_SLEEP = true; /*remove the comment for random writers time to read*/
    public static final int WRITERS_LIFE = 8;
    
     
