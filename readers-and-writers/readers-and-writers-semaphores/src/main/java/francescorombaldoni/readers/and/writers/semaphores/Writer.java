@@ -1,4 +1,4 @@
-package francescorombaldoni.readers.and.writers.condition.variables;
+package francescorombaldoni.readers.and.writers.semaphores;
 
 import java.util.Random;
 
