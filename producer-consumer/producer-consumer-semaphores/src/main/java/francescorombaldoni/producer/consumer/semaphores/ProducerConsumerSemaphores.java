@@ -23,19 +23,19 @@ public class ProducerConsumerSemaphores {
         Consumer[] consumers = new Consumer[CONSUMERS_NUMBER];
         Producer[] producers = new Producer[PRODUCERS_NUMBER];
         
-        /*inizialize consumers*/
+        /*initialize consumers*/
         for(int i = 0; i < consumers.length; i++){
             consumers[i] = new Consumer("Consumer_"+i, buffer, CONSUMERS_TIME_TO_SLEEP);
             consumers[i].start();
         }
         
-        /*inizialize producers*/
+        /*initialize producers*/
         for(int i = 0; i < producers.length; i++){
             producers[i] = new Producer("Producer_"+i, buffer, PRODUCERS_LIFE, PRODUCERS_TIME_TO_SLEEP);
             producers[i].start();
         }
         
-        /*monitoring the states of threads*/
+        /*monitoring the threads states*/
         try{
             
             for(int i = 0; i < producers.length; i++){

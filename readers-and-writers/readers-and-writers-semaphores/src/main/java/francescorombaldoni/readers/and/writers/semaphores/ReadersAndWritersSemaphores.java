@@ -9,13 +9,13 @@ import java.util.Random;
 public class ReadersAndWritersSemaphores {
 
    public final static int BUFFERS_LENGTH = 7;
-   //public final static boolean BUFFERS_LENGTH = true; /*remove the comment for random buffers elements*/
+   //public final static boolean BUFFERS_LENGTH = true; /*remove the comment for random buffer's elements*/
    public final static boolean FIFO_SEMAPHORES = false;
    public static final int READERS_NUMBER = 10;
    public static final int READERS_TIME_TO_READ = 150;
-   //public static final boolean READERS_TIME_TO_READ = true; /*remove the comment for random readers time to read*/
+   //public static final boolean READERS_TIME_TO_READ = true; /*remove the comment for random reader's time to read*/
    public static final int READERS_TIME_TO_SLEEP = 300;
-   //public static final boolean READERS_TIME_TO_SLEEP = true; /*remove the comment for random readers time to sleep*/
+   //public static final boolean READERS_TIME_TO_SLEEP = true; /*remove the comment for random reader's time to sleep*/
    public static final int WRITERS_NUMBER = 5;
    public static final int WRITERS_TIME_TO_SLEEP = 200;
    //public static final boolean WRITERS_TIME_TO_SLEEP = true; /*remove the comment for random writers time to read*/
@@ -27,19 +27,19 @@ public class ReadersAndWritersSemaphores {
         Writer[] writers = new Writer[WRITERS_NUMBER];
         Reader[] readers = new Reader[READERS_NUMBER];
         
-        /*inizialize writers*/
+        /*initialize writers*/
         for(int i = 0; i < writers.length; i++){
             writers[i] = new Writer("Writer_"+i, buffer, WRITERS_LIFE, WRITERS_TIME_TO_SLEEP);
             writers[i].start();
         }
         
-        /*inizialize readers*/
+        /*initialize readers*/
         for(int i = 0; i < readers.length; i++){
             readers[i] = new Reader("Reader_"+i, buffer, READERS_TIME_TO_READ, READERS_TIME_TO_SLEEP);
             readers[i].start();
         }
         
-        /*monitoring the states of threads*/
+        /*monitoring the threads states*/
         try{
             
             for(int i = 0; i < writers.length; i++){

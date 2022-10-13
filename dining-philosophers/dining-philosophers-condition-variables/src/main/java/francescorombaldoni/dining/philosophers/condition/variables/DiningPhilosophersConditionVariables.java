@@ -23,7 +23,7 @@ public class DiningPhilosophersConditionVariables {
             philosophers[i].start();
         }
         
-        /*monitoring the states of threads*/
+        /*monitoring the threads states*/
         try{
             for(int i = 0; i < philosophers.length; i++){
                 philosophers[i].join();

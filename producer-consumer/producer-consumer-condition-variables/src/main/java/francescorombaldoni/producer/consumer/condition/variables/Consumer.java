@@ -73,7 +73,7 @@ class Consumer extends Thread{
             this.time = System.currentTimeMillis();
             
             try{
-                System.out.println("=> "+this.getName() + " had consumed: " +this.buffer.consume(this));
+                System.out.println("=> "+ this.getName() + " had consumed: " +this.buffer.consume(this));
                 this.buffer.insertConsumerTime(this);
                 if(this.isRandomTimeToSleep){
                     Thread.sleep(this.random.nextInt(501));

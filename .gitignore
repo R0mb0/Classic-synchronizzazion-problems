@@ -28,3 +28,4 @@ hs_err_pid*
 /dining-philosophers/dining-philosophers-semaphores/target/
 /readers-and-writers/readers-and-writers-condition-variables/target/
 /readers-and-writers/readers-and-writers-semaphores/target/
+/sleeping-barber/sleeping-barber-condition-variables/target/
