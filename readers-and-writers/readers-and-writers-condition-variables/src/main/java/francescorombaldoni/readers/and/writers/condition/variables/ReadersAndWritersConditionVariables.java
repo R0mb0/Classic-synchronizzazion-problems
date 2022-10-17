@@ -24,13 +24,13 @@ public class ReadersAndWritersConditionVariables {
         Writer[] writers = new Writer[WRITERS_NUMBER];
         Reader[] readers = new Reader[READERS_NUMBER];
         
-        /*inizialize writers*/
+        /*initialize writers*/
         for(int i = 0; i < writers.length; i++){
             writers[i] = new Writer("Writer_"+i, buffer, WRITERS_LIFE, WRITERS_TIME_TO_SLEEP);
             writers[i].start();
         }
         
-        /*inizialize readers*/
+        /*initialize readers*/
         for(int i = 0; i < readers.length; i++){
             readers[i] = new Reader("Reader_"+i, buffer, READERS_TIME_TO_READ, READERS_TIME_TO_SLEEP);
             readers[i].start();

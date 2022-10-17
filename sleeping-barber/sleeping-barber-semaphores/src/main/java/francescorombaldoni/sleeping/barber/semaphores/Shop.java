@@ -1,15 +1,12 @@
-package francescorombaldoni.sleeping.barber.condition.variables;
+package francescorombaldoni.sleeping.barber.semaphores;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.locks.Condition;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 
 /**
  *
@@ -19,10 +16,12 @@ import java.util.logging.Logger;
  */
 class Shop {
     /*PRIVATE FIELDS*/
-   private WaitingRoom waitingRoom;
+   private int totalChairs;
    private Random random;
    private ReentrantLock mutex;
-   private Condition sleepingBarber;
+   private Semaphore sleepingBarber;
+   private Semaphore waitingCustomers;
+   private int counterPermits;
    
    /*fields for debug purpose*/
    private Long time;
@@ -35,9 +34,11 @@ class Shop {
     * @param totalChairs the number of avaible chairs
     */
    public Shop(int totalChairs){
-       this.waitingRoom = new WaitingRoom(totalChairs);
+       this.totalChairs = totalChairs;
        this.mutex = new ReentrantLock();
-       this.sleepingBarber = this.mutex.newCondition();
+       this.sleepingBarber = new Semaphore(0);
+       this.waitingCustomers = new Semaphore(0);
+       this.counterPermits = 0;
        
        this.time = System.currentTimeMillis();
        this.servedCustomers = new HashMap<Customer, Integer>();
@@ -54,13 +55,41 @@ class Shop {
             System.exit(1);
         }
        this.random = new Random();
-       this.waitingRoom = new WaitingRoom(this.random.nextInt(21));
+       this.totalChairs = this.random.nextInt(21);
        this.mutex = new ReentrantLock();
-       this.sleepingBarber = this.mutex.newCondition();
+       this.sleepingBarber = new Semaphore(0);
+       this.waitingCustomers = new Semaphore(0);
+       this.counterPermits = 0;
        
        this.time = System.currentTimeMillis();
        this.servedCustomers = new HashMap<Customer, Integer>();
        this.barberAverageTime = new ArrayList<Long>();
+   }
+   
+   /*PRIVATE METHODS*/
+   private void acquireCustomerSemaphore() throws InterruptedException{
+       try{
+           /*start critical section*/
+           this.mutex.lock();
+           this.counterPermits++;
+       }finally{
+           /*end critical section*/
+           this.mutex.unlock();
+       }
+       
+       this.waitingCustomers.acquire();
+   }
+   
+   private void releaseCustomerSemaphore(){
+       try{
+           /*start critical section*/
+           this.mutex.lock();
+           this.counterPermits--;
+       }finally{
+           /*end critical section*/
+           this.mutex.unlock();
+       }
+       this.waitingCustomers.release();
    }
    
    /*PUBLIC METHODS*/
@@ -125,19 +154,22 @@ class Shop {
            }
            
            System.out.println("--> " + customer.getName() + " is entered into the shop");
-           
-           if(!this.waitingRoom.isFull()){
-               System.out.println("B> " + customer.getName() + " waiting for the hair cut");
-               this.waitingRoom.add(customer);
-               this.sleepingBarber.signal();
-               customer.suspend(this.mutex.newCondition());
-           }else{
-               System.out.println("X> " + customer.getName() + " is leaving the shop");
-           }
        }finally{
            this.mutex.unlock();
            /*end critical section*/
        }
+       
+       if(this.counterPermits < this.totalChairs){
+               System.out.println("B> " + customer.getName() + " waiting for the hair cut");
+              this.sleepingBarber.release();
+              this.acquireCustomerSemaphore();
+              
+              /*if the customer is here, he has been served*/
+              this.servedCustomers.replace(customer, this.servedCustomers.get(customer) + 1);
+              
+           }else{
+               System.out.println("X> " + customer.getName() + " is leaving the shop");
+           }
    }
    
    /**
@@ -145,30 +177,24 @@ class Shop {
     * @param barber the barber that serve the customers of shop
     */
    public void serveCustomer(Barber barber){
-       try{
-           /*start critical section*/
-           this.mutex.lock();
+       
            
            System.out.println("___> " + barber.getName() + " is ready to serve a customer");
            
            /*if there isn't any customer suspend the thread*/
-           while(this.waitingRoom.isEmpty()){
+           if(this.counterPermits == 0){
                System.out.println("__> " + barber.getName() + " is sleeping");
-               this.sleepingBarber.await();
+               try{
+                   this.sleepingBarber.acquire();
+               }catch(InterruptedException e){
+                   System.out.println("Error of : " + barber.getName() + " in serveCustomer method");
+               }
+               
            }
            
-           Customer temp = this.waitingRoom.getCustomer(this.waitingRoom.getOccupiedChairs() - 1);
-           System.out.println("S> " + barber.getName() + " is serving: " + temp.getName());
-           temp.restart();
-           this.servedCustomers.replace(temp, this.servedCustomers.get(temp) + 1);
-           this.waitingRoom.remove(temp);
+           System.out.println("S> " + barber.getName() + " is serving a customer ");
+           this.releaseCustomerSemaphore();
            
-       }catch(InterruptedException e){
-           System.out.println("Error of : " + barber.getName() + " in serveCustomer method");
-           System.exit(1);
-       }finally{
-           this.mutex.unlock();
-           /*end critical section*/
-       }
+      
    }
 }

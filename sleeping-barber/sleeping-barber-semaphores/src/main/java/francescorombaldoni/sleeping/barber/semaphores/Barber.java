@@ -1,4 +1,4 @@
-package francescorombaldoni.sleeping.barber.condition.variables;
+package francescorombaldoni.sleeping.barber.semaphores;
 
 import java.util.Random;
 
