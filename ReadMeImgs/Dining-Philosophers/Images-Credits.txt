@@ -1,0 +1,1 @@
+Image taken from: https://dev.to/vunderkind/the-dining-philosophers-problem-or-your-introduction-to-thinking-in-computer-science-8ii
